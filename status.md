@@ -88,7 +88,7 @@
 ### Stage 04 - Dataset ETL Jobs
 - Date: 2026-05-31
 - Branch: `feat/stage-04-dataset-etl-jobs`
-- Status: Completed (local)
+- Status: Completed
 - Scope:
   - Implement dataset-level ETL modules for `products`, `orders`, and `order_items`.
   - Reuse Stage 03 utilities for validation, quality split, deduplication, and manifest output.
@@ -108,7 +108,7 @@
 ### Stage 05 - Step Functions Orchestration
 - Date: 2026-05-31
 - Branch: `feat/stage-05-stepfunctions-orchestration`
-- Status: Completed (local)
+- Status: Completed
 - Scope:
   - Implement a dependency-aware Step Functions state machine for end-to-end ETL orchestration.
   - Include retry, failure routing, validation gate, and archive-on-success flow.
@@ -129,7 +129,7 @@
 ### Stage 06 - IaC Baseline
 - Date: 2026-05-31
 - Branch: `feat/stage-06-iac-baseline`
-- Status: Completed (local)
+- Status: Completed
 - Scope:
   - Add Terraform baseline for S3, IAM, Glue jobs, and Step Functions integration.
 - Delivered:
@@ -150,7 +150,26 @@
 - Next:
   - Stage 07 test suite expansion.
 
+### Stage 07 - Test Suite Expansion
+- Date: 2026-05-31
+- Branch: `feat/stage-07-test-suite-expansion`
+- Status: Completed
+- Scope:
+  - Expand tests to cover ETL edge cases and IaC structural integrity.
+- Delivered:
+  - Added `tests/test_etl_edge_cases.py` for:
+    - required-column failure path
+    - referential validation behavior
+    - deduplication missing-order-column error path
+  - Added `tests/test_iac_structure.py` to validate modular Terraform layout.
+- Testing:
+  - Command: `python -m pytest -q`
+  - Result: `17 passed`
+- Risks/Notes:
+  - Tests remain local/static; Terraform runtime validation still depends on environment credentials and deployment variables.
+- Next:
+  - Stage 08 CI/CD pipeline.
+
 ## Next Stage Queue
-1. Stage 07 - Test suite expansion.
-2. Stage 08 - CI/CD pipeline.
-3. Stage 09 - Runbook and production validation flow.
+1. Stage 08 - CI/CD pipeline.
+2. Stage 09 - Runbook and production validation flow.
