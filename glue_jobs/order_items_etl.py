@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pandas as pd
@@ -15,9 +16,16 @@ from glue_jobs.utils.delta_utils import (
 )
 
 
-def run_order_items_etl(input_files: list[Path], valid_product_ids: set[int]) -> dict[str, object]:
+def run_order_items_etl(
+    input_files: list[Path], valid_product_ids: set[int], run_id: str
+) -> dict[str, object]:
     """Process order item records and enforce product referential validity."""
-    dataframes = [pd.read_csv(path) for path in input_files]
+    ingestion_timestamp = datetime.now(UTC).isoformat()
+    dataframes: list[pd.DataFrame] = []
+    for path in input_files:
+        frame = pd.read_csv(path)
+        frame["source_file"] = str(path)
+        dataframes.append(frame)
     dataframe = pd.concat(dataframes, ignore_index=True) if dataframes else pd.DataFrame()
 
     validate_required_columns(
@@ -25,6 +33,8 @@ def run_order_items_etl(input_files: list[Path], valid_product_ids: set[int]) ->
         ["id", "order_id", "product_id", "order_timestamp", "date"],
     )
 
+    dataframe["ingestion_timestamp"] = ingestion_timestamp
+    dataframe["run_id"] = run_id
     dataframe["order_timestamp"] = pd.to_datetime(dataframe["order_timestamp"], errors="coerce")
     # Preserve deterministic deduplication ordering for duplicate item ids.
     dataframe["ingestion_order"] = range(len(dataframe))

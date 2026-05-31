@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pandas as pd
@@ -15,9 +16,14 @@ from glue_jobs.utils.delta_utils import (
 )
 
 
-def run_orders_etl(input_files: list[Path]) -> dict[str, object]:
+def run_orders_etl(input_files: list[Path], run_id: str) -> dict[str, object]:
     """Process order records with validation and latest-by-key deduplication."""
-    dataframes = [pd.read_csv(path) for path in input_files]
+    ingestion_timestamp = datetime.now(UTC).isoformat()
+    dataframes: list[pd.DataFrame] = []
+    for path in input_files:
+        frame = pd.read_csv(path)
+        frame["source_file"] = str(path)
+        dataframes.append(frame)
     dataframe = pd.concat(dataframes, ignore_index=True) if dataframes else pd.DataFrame()
 
     validate_required_columns(
@@ -25,6 +31,8 @@ def run_orders_etl(input_files: list[Path]) -> dict[str, object]:
         ["order_id", "user_id", "order_timestamp", "total_amount", "date"],
     )
 
+    dataframe["ingestion_timestamp"] = ingestion_timestamp
+    dataframe["run_id"] = run_id
     dataframe["order_timestamp"] = pd.to_datetime(dataframe["order_timestamp"], errors="coerce")
     # Keep stable ingestion precedence so duplicate keys retain the most recent row in this run.
     dataframe["ingestion_order"] = range(len(dataframe))

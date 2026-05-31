@@ -23,9 +23,12 @@ def test_run_products_etl_deduplicates_and_splits_invalid(tmp_path: Path) -> Non
             }
         ),
     )
-    result = run_products_etl(file_path)
+    result = run_products_etl(file_path, run_id="run-001")
     assert len(result["curated_df"]) == 2
     assert len(result["invalid_df"]) == 1
+    assert "ingestion_timestamp" in result["curated_df"].columns
+    assert "source_file" in result["curated_df"].columns
+    assert "run_id" in result["curated_df"].columns
 
 
 def test_run_orders_etl_filters_invalid_and_deduplicates(tmp_path: Path) -> None:
@@ -41,10 +44,11 @@ def test_run_orders_etl_filters_invalid_and_deduplicates(tmp_path: Path) -> None
             }
         ),
     )
-    result = run_orders_etl([file_path])
+    result = run_orders_etl([file_path], run_id="run-002")
     assert len(result["curated_df"]) == 1
     assert len(result["invalid_df"]) == 1
     assert result["curated_df"].iloc[0]["user_id"] == 6
+    assert result["curated_df"].iloc[0]["run_id"] == "run-002"
 
 
 def test_run_order_items_etl_checks_product_reference(tmp_path: Path) -> None:
@@ -60,7 +64,8 @@ def test_run_order_items_etl_checks_product_reference(tmp_path: Path) -> None:
             }
         ),
     )
-    result = run_order_items_etl([file_path], valid_product_ids={200})
+    result = run_order_items_etl([file_path], valid_product_ids={200}, run_id="run-003")
     assert len(result["curated_df"]) == 1
     assert len(result["invalid_df"]) == 1
     assert result["curated_df"].iloc[0]["product_id"] == 200
+    assert result["curated_df"].iloc[0]["run_id"] == "run-003"

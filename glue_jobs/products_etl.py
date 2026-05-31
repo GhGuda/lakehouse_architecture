@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pandas as pd
@@ -15,10 +16,14 @@ from glue_jobs.utils.delta_utils import (
 )
 
 
-def run_products_etl(input_file: Path) -> dict[str, object]:
+def run_products_etl(input_file: Path, run_id: str) -> dict[str, object]:
     """Process product records into curated and invalid sets with manifest metadata."""
     dataframe = pd.read_csv(input_file)
     validate_required_columns(list(dataframe.columns), ["product_id"])
+    ingestion_timestamp = datetime.now(UTC).isoformat()
+    dataframe["ingestion_timestamp"] = ingestion_timestamp
+    dataframe["source_file"] = str(input_file)
+    dataframe["run_id"] = run_id
 
     rules = [ValidationRule("product_id_required", lambda frame: frame["product_id"].notna())]
     valid_records, invalid_records = split_valid_invalid_records(dataframe, rules)
