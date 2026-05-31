@@ -39,7 +39,7 @@
 ### Stage 02 - Excel to CSV Standardization
 - Date: 2026-05-31
 - Branch: `feat/stage-02-standardize-excel-to-csv`
-- Status: Completed (local)
+- Status: Completed
 - Scope:
   - Build a reusable utility to standardize source files into CSV outputs.
   - Ensure Excel workbooks are converted sheet-by-sheet with date-preserving file names.
@@ -62,11 +62,33 @@
 - Next:
   - Stage 03 shared ETL utilities.
 
+### Stage 03 - Shared ETL Utilities
+- Date: 2026-05-31
+- Branch: `feat/stage-03-etl-utils`
+- Status: Completed (local)
+- Scope:
+  - Add reusable shared ETL utility functions for upcoming dataset-specific Glue jobs.
+  - Keep utilities focused on validation, record quality split, deduplication, and processed-file metadata handoff.
+- Delivered:
+  - Added utility module: `glue_jobs/utils/delta_utils.py`
+    - `validate_required_columns(...)`
+    - `split_valid_invalid_records(...)`
+    - `deduplicate_by_key(...)`
+    - `build_processed_file_manifest(...)`
+    - `DataValidationError` and `ValidationRule`
+  - Added tests: `tests/test_delta_utils.py`
+- Testing:
+  - Command: `python -m pytest -q tests/test_delta_utils.py tests/test_standardize_raw_inputs.py`
+  - Result: `8 passed`
+- Risks/Notes:
+  - Utilities are pandas-based for deterministic local testing; Spark-specific integration wrappers will be added with dataset ETL jobs in Stage 04.
+- Next:
+  - Stage 04 dataset ETL jobs (`products`, `orders`, `order_items`).
+
 ## Next Stage Queue
-1. Stage 03 - Shared ETL utilities.
-2. Stage 04 - Dataset ETL jobs.
-3. Stage 05 - Step Functions orchestration.
-4. Stage 06 - IaC baseline.
-5. Stage 07 - Test suite expansion.
-6. Stage 08 - CI/CD pipeline.
-7. Stage 09 - Runbook and production validation flow.
+1. Stage 04 - Dataset ETL jobs.
+2. Stage 05 - Step Functions orchestration.
+3. Stage 06 - IaC baseline.
+4. Stage 07 - Test suite expansion.
+5. Stage 08 - CI/CD pipeline.
+6. Stage 09 - Runbook and production validation flow.
