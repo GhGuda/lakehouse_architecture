@@ -97,3 +97,18 @@ pip install -r requirements.txt
 - `docs/architecture.png`
 - `docs/Building a Lakehouse Using PySpark Delta Tables & S3.pdf`
 - `status.md` (stage progress and handoff tracker)
+
+## CI/CD Configuration
+GitHub Actions workflow: `.github/workflows/ci-cd.yml`
+
+Required GitHub repository variables:
+- `AWS_REGION`
+- `LAKEHOUSE_BUCKET_NAME`
+- `DETECT_NEW_FILES_LAMBDA_ARN`
+- `CATALOG_UPDATE_LAMBDA_ARN`
+- `ATHENA_VALIDATION_LAMBDA_ARN`
+- `ARCHIVE_FILES_LAMBDA_ARN`
+- `FAILURE_NOTIFICATIONS_TOPIC_ARN`
+
+Required GitHub repository secret:
+- `AWS_ROLE_TO_ASSUME` (OIDC assumable IAM role ARN)

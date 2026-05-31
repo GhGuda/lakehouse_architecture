@@ -1,0 +1,258 @@
+{
+  "Comment": "Lakehouse ETL orchestration with dependency-aware flow and archival handoff",
+  "StartAt": "DetectNewRawFiles",
+  "States": {
+    "DetectNewRawFiles": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "${detect_new_files_lambda_arn}",
+        "Payload.$": "$"
+      },
+      "ResultPath": "$.detection",
+      "Next": "HasNewFiles",
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 3,
+          "BackoffRate": 2.0
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "ResultPath": "$.error",
+          "Next": "NotifyFailure"
+        }
+      ]
+    },
+    "HasNewFiles": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.detection.Payload.has_new_files",
+          "BooleanEquals": true,
+          "Next": "RunProductsEtl"
+        }
+      ],
+      "Default": "NoNewFiles"
+    },
+    "NoNewFiles": {
+      "Type": "Succeed"
+    },
+    "RunProductsEtl": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::glue:startJobRun.sync",
+      "Parameters": {
+        "JobName": "${products_glue_job_name}",
+        "Arguments": {
+          "--run_id.$": "$$.Execution.Id"
+        }
+      },
+      "ResultPath": "$.products",
+      "Next": "RunOrdersEtl",
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "IntervalSeconds": 5,
+          "MaxAttempts": 3,
+          "BackoffRate": 2.0
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "ResultPath": "$.error",
+          "Next": "NotifyFailure"
+        }
+      ]
+    },
+    "RunOrdersEtl": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::glue:startJobRun.sync",
+      "Parameters": {
+        "JobName": "${orders_glue_job_name}",
+        "Arguments": {
+          "--run_id.$": "$$.Execution.Id"
+        }
+      },
+      "ResultPath": "$.orders",
+      "Next": "RunOrderItemsEtl",
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "IntervalSeconds": 5,
+          "MaxAttempts": 3,
+          "BackoffRate": 2.0
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "ResultPath": "$.error",
+          "Next": "NotifyFailure"
+        }
+      ]
+    },
+    "RunOrderItemsEtl": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::glue:startJobRun.sync",
+      "Parameters": {
+        "JobName": "${order_items_glue_job_name}",
+        "Arguments": {
+          "--run_id.$": "$$.Execution.Id"
+        }
+      },
+      "ResultPath": "$.order_items",
+      "Next": "UpdateGlueCatalog",
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "IntervalSeconds": 5,
+          "MaxAttempts": 3,
+          "BackoffRate": 2.0
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "ResultPath": "$.error",
+          "Next": "NotifyFailure"
+        }
+      ]
+    },
+    "UpdateGlueCatalog": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "${catalog_update_lambda_arn}",
+        "Payload.$": "$"
+      },
+      "ResultPath": "$.catalog",
+      "Next": "RunAthenaValidation",
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 3,
+          "BackoffRate": 2.0
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "ResultPath": "$.error",
+          "Next": "NotifyFailure"
+        }
+      ]
+    },
+    "RunAthenaValidation": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "${athena_validation_lambda_arn}",
+        "Payload.$": "$"
+      },
+      "ResultPath": "$.athena_validation",
+      "Next": "ValidationPassed",
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 3,
+          "BackoffRate": 2.0
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "ResultPath": "$.error",
+          "Next": "NotifyFailure"
+        }
+      ]
+    },
+    "ValidationPassed": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.athena_validation.Payload.validation_passed",
+          "BooleanEquals": true,
+          "Next": "ArchiveProcessedRawFiles"
+        }
+      ],
+      "Default": "NotifyFailure"
+    },
+    "ArchiveProcessedRawFiles": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "${archive_files_lambda_arn}",
+        "Payload.$": "$"
+      },
+      "ResultPath": "$.archive",
+      "Next": "Success",
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 3,
+          "BackoffRate": 2.0
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": [
+            "States.ALL"
+          ],
+          "ResultPath": "$.error",
+          "Next": "NotifyFailure"
+        }
+      ]
+    },
+    "NotifyFailure": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::sns:publish",
+      "Parameters": {
+        "TopicArn": "${failure_notifications_topic_arn}",
+        "Subject": "Lakehouse ETL workflow failure",
+        "Message.$": "States.JsonToString($)"
+      },
+      "Next": "FailState"
+    },
+    "FailState": {
+      "Type": "Fail",
+      "Error": "LakehouseWorkflowFailed",
+      "Cause": "Workflow execution failed. Check error details and CloudWatch logs."
+    },
+    "Success": {
+      "Type": "Succeed"
+    }
+  }
+}
