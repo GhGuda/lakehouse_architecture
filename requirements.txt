@@ -1,0 +1,10 @@
+# Core data tooling
+pandas>=2.2.0
+openpyxl>=3.1.0
+pyarrow>=16.0.0
+
+# Spark / Delta (local development compatibility)
+pyspark>=3.5.0
+
+# Testing and quality
+pytest>=8.0.0
