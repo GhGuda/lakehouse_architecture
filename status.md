@@ -126,8 +126,31 @@
 - Next:
   - Stage 06 IaC baseline.
 
+### Stage 06 - IaC Baseline
+- Date: 2026-05-31
+- Branch: `feat/stage-06-iac-baseline`
+- Status: Completed (local)
+- Scope:
+  - Add Terraform baseline for S3, IAM, Glue jobs, and Step Functions integration.
+- Delivered:
+  - Refactored IaC into modules for maintainability:
+    - `iac/modules/s3`
+    - `iac/modules/iam`
+    - `iac/modules/glue`
+    - `iac/modules/stepfunctions`
+  - Rewired root composition in `iac/main.tf`.
+  - Added root `iac/variables.tf` and `iac/outputs.tf`.
+- Testing:
+  - Command: `terraform fmt iac`
+  - Result: formatting applied successfully.
+  - Command: `python -m pytest -q tests/test_state_machine.py tests/test_dataset_etl_jobs.py tests/test_delta_utils.py tests/test_standardize_raw_inputs.py`
+  - Result: `12 passed`
+- Risks/Notes:
+  - `terraform init/validate/plan` not run yet because deployment-time variables and AWS credentials are environment-dependent.
+- Next:
+  - Stage 07 test suite expansion.
+
 ## Next Stage Queue
-1. Stage 06 - IaC baseline.
-2. Stage 07 - Test suite expansion.
-3. Stage 08 - CI/CD pipeline.
-4. Stage 09 - Runbook and production validation flow.
+1. Stage 07 - Test suite expansion.
+2. Stage 08 - CI/CD pipeline.
+3. Stage 09 - Runbook and production validation flow.
