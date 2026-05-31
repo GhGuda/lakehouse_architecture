@@ -170,6 +170,25 @@
 - Next:
   - Stage 08 CI/CD pipeline.
 
+### Stage 08 - CI/CD Pipeline
+- Date: 2026-05-31
+- Branch: `feat/stage-08-cicd-pipeline`
+- Status: Completed (local)
+- Scope:
+  - Add GitHub Actions workflow for automated test, Terraform checks, and main-branch deploy.
+- Delivered:
+  - Added `.github/workflows/ci-cd.yml` with:
+    - `test` job (`pytest`)
+    - `terraform-check` job (`fmt`, `init`, `validate`)
+    - `deploy` job gated to `push` on `main` with OIDC AWS auth and Terraform `plan/apply`
+  - Updated `README.md` with required GitHub Action variables and secret.
+- Testing:
+  - Command: `python -m pytest -q`
+  - Result: `17 passed`
+- Risks/Notes:
+  - Deployment job requires repository-level AWS/OIDC configuration and deployment variable values.
+- Next:
+  - Stage 09 runbook and production validation flow.
+
 ## Next Stage Queue
-1. Stage 08 - CI/CD pipeline.
-2. Stage 09 - Runbook and production validation flow.
+1. Stage 09 - Runbook and production validation flow.
