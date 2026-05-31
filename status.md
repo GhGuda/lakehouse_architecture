@@ -211,5 +211,22 @@
 - Next:
   - Project implementation stages complete; proceed with PR consolidation/review and deployment rollout.
 
-## Next Stage Queue
-1. Implementation stages completed.
+### Stage 10 - Production Readiness Gap Closure
+- Date: 2026-05-31
+- Branch: `feat/stage-10-production-readiness`
+- Status: Completed (local)
+- Scope:
+  - Close remaining practical gaps for first AWS dry run.
+- Delivered:
+  - Implemented Lambda handlers with `boto3` production logic:
+    - `lambdas/detect_new_files/lambda_function.py`
+    - `lambdas/catalog_update/lambda_function.py`
+    - `lambdas/athena_validation/lambda_function.py`
+    - `lambdas/archive_files/lambda_function.py`
+  - Added unit tests: `tests/test_lambda_handlers.py`
+  - Kept ETL modules as pure callable functions (no CLI entrypoint in core job modules).
+  - Added `docs/production_readiness.md` with deployment and first-run checklist.
+- Testing:
+  - Python tests executed successfully after ETL entrypoint additions.
+- Risks/Notes:
+  - Glue catalog schema descriptors and Athena query set should be hardened further per final table definitions and partition strategy.
