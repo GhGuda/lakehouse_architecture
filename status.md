@@ -105,9 +105,29 @@
 - Next:
   - Stage 05 Step Functions orchestration.
 
+### Stage 05 - Step Functions Orchestration
+- Date: 2026-05-31
+- Branch: `feat/stage-05-stepfunctions-orchestration`
+- Status: Completed (local)
+- Scope:
+  - Implement a dependency-aware Step Functions state machine for end-to-end ETL orchestration.
+  - Include retry, failure routing, validation gate, and archive-on-success flow.
+- Delivered:
+  - Added state machine definition: `stepfunctions/state_machine.json`
+    - Flow: detect -> products -> orders -> order_items -> catalog update -> Athena validation -> archive -> success
+    - Failure path via SNS notify -> fail state
+    - Retries configured on task states
+  - Added orchestration test: `tests/test_state_machine.py`
+- Testing:
+  - Command: `python -m pytest -q tests/test_state_machine.py tests/test_dataset_etl_jobs.py tests/test_delta_utils.py tests/test_standardize_raw_inputs.py`
+  - Result: `12 passed`
+- Risks/Notes:
+  - ARNs and resource names are templated placeholders for IaC substitution in Stage 06.
+- Next:
+  - Stage 06 IaC baseline.
+
 ## Next Stage Queue
-1. Stage 05 - Step Functions orchestration.
-2. Stage 06 - IaC baseline.
-3. Stage 07 - Test suite expansion.
-4. Stage 08 - CI/CD pipeline.
-5. Stage 09 - Runbook and production validation flow.
+1. Stage 06 - IaC baseline.
+2. Stage 07 - Test suite expansion.
+3. Stage 08 - CI/CD pipeline.
+4. Stage 09 - Runbook and production validation flow.
