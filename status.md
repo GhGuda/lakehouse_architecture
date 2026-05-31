@@ -65,7 +65,7 @@
 ### Stage 03 - Shared ETL Utilities
 - Date: 2026-05-31
 - Branch: `feat/stage-03-etl-utils`
-- Status: Completed (local)
+- Status: Completed
 - Scope:
   - Add reusable shared ETL utility functions for upcoming dataset-specific Glue jobs.
   - Keep utilities focused on validation, record quality split, deduplication, and processed-file metadata handoff.
@@ -85,10 +85,29 @@
 - Next:
   - Stage 04 dataset ETL jobs (`products`, `orders`, `order_items`).
 
+### Stage 04 - Dataset ETL Jobs
+- Date: 2026-05-31
+- Branch: `feat/stage-04-dataset-etl-jobs`
+- Status: Completed (local)
+- Scope:
+  - Implement dataset-level ETL modules for `products`, `orders`, and `order_items`.
+  - Reuse Stage 03 utilities for validation, quality split, deduplication, and manifest output.
+- Delivered:
+  - Added `glue_jobs/products_etl.py` with `run_products_etl(...)`.
+  - Added `glue_jobs/orders_etl.py` with `run_orders_etl(...)`.
+  - Added `glue_jobs/order_items_etl.py` with `run_order_items_etl(...)`.
+  - Added tests: `tests/test_dataset_etl_jobs.py`.
+- Testing:
+  - Command: `python -m pytest -q tests/test_delta_utils.py tests/test_dataset_etl_jobs.py tests/test_standardize_raw_inputs.py`
+  - Result: `11 passed`
+- Risks/Notes:
+  - Current ETL implementations are pandas-based local job logic; Spark/Delta write integration and Glue runtime wiring will be added in upcoming orchestration/infrastructure stages.
+- Next:
+  - Stage 05 Step Functions orchestration.
+
 ## Next Stage Queue
-1. Stage 04 - Dataset ETL jobs.
-2. Stage 05 - Step Functions orchestration.
-3. Stage 06 - IaC baseline.
-4. Stage 07 - Test suite expansion.
-5. Stage 08 - CI/CD pipeline.
-6. Stage 09 - Runbook and production validation flow.
+1. Stage 05 - Step Functions orchestration.
+2. Stage 06 - IaC baseline.
+3. Stage 07 - Test suite expansion.
+4. Stage 08 - CI/CD pipeline.
+5. Stage 09 - Runbook and production validation flow.
